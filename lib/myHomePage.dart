@@ -78,27 +78,31 @@ class _MyHomePageState extends State<MyHomePage> {
             content: SingleChildScrollView(
               child: Padding(
                   padding: EdgeInsets.only(left: 10, right: 10),
-                child: ListBody(
+                child: Column(
                   children: [
-                    TextField(
-                      controller: _taskController,
-                      decoration:  InputDecoration(hintText: 'Enter your task'),
+                    ListBody(
+                      children: [
+                        TextField(
+                          controller: _taskController,
+                          decoration:  InputDecoration(hintText: 'Enter your task'),
+                        ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        ElevatedButton(
+                            onPressed: () async{
+                              if(id == null){
+                                await addTasks();
+                              }
+                              if( id != null){
+                                await updateTask(id);
+                              }
+                              _taskController.clear();
+                              Navigator.pop(context);
+                              print('elevated pressed');
+                            }, child: Text(id == null ? 'Create' : 'Update'))
+                      ],
                     ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    ElevatedButton(
-                        onPressed: () async{
-                          if(id == null){
-                            await addTasks();
-                          }
-                          if( id != null){
-                            await updateTask(id);
-                          }
-                          _taskController.clear();
-                          Navigator.pop(context);
-                          print('elevated pressed');
-                        }, child: Text(id == null ? 'Create' : 'Update'))
                   ],
                 ),
               ),
@@ -160,6 +164,25 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
+          SizedBox(width: 20,),
+          GestureDetector(
+            onTap: () {
+              print('sync pressed');
+
+            },
+            child: Row(
+              children: const [
+                Text("Add"),
+                SizedBox(
+                  width: 5,
+                ),
+                Icon(
+                  Icons.sync_rounded,
+                  size: 40,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       body: _isLoading
@@ -167,28 +190,28 @@ class _MyHomePageState extends State<MyHomePage> {
             child: CircularProgressIndicator(),
           )
           : ListView.builder(
-        itemCount: taskList.length,
-        itemBuilder: (context, index)
+            itemCount: taskList.length,
+            itemBuilder: (context, index)
             => Card(
               margin: const EdgeInsets.only(left: 8, right: 8, top: 8),
               child: ListTile(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    taskList[index]['workList'],
-                    style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                ],
-              ),
-              trailing: SizedBox(
-                width: 100,
-                child: Row(
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      taskList[index]['workList'],
+                      style: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                  ],
+                ),
+                trailing: SizedBox(
+                  width: 100,
+                  child: Row(
+                    children: [
                     Container(
                       height: 40,
                       width: 40,
@@ -228,7 +251,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
                 ),
-              )),
+              )
+              ),
         ),
       ),
     );
