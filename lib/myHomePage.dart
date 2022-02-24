@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'dbManager.dart';
+import 'dataModelClass.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -8,7 +11,42 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+Future<void> submitData(String tasks) async{
+  print('---------------');
+  print(tasks);
+    // var response = await http.post(Uri.https('flutterapi.brotherdev.com', 'syncapi.php'),
+  http.Response response = await http.post(
+      Uri.parse('http://flutterapi.brotherdev.com/syncapi.php'),
+    body: {
+      // "id" : id,
+     "workNote": tasks
+    });
+    var data = response.body;
+    print(response.statusCode);
+    print(response.body);
+    print('-------------------');
+    // if(response.statusCode == 201){
+    //   return DataModel.fromJson(jsonDecode(response.body));
+    // }
+    // else{
+    //   throw Exception("Failed to ceate album $submitData(tasks)");
+    // }
+
+    // if (response.statusCode == 201) {
+    //   // If the server did return a 201 CREATED response,
+    //   // then parse the JSON.
+    //   return Album.fromJson(jsonDecode(response.body));
+    // } else {
+    //   // If the server did not return a 201 CREATED response,
+    //   // then throw an exception.
+    //   throw Exception('Failed to create album.');
+    // }
+
+}
+
 class _MyHomePageState extends State<MyHomePage> {
+
+  late DataModel _dataModel;
 
   List<Map<String, dynamic>> taskList = [];
   bool _isLoading = true;
@@ -24,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _isLoading = false;
     });
   }
+
   @override
   void initState() {
     getTaskList();
@@ -36,8 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void selectedTask(int? id) async{
     if (id != null) {
       final selectedId =
-      taskList.firstWhere((element) => element['id'] == id);
-      _taskController.text = selectedId['workList'];
+      taskList.firstWhere((element) => element["id"] == id);
+      _taskController.text = selectedId["workList"];
     }
 
     showDialog(
@@ -78,27 +117,31 @@ class _MyHomePageState extends State<MyHomePage> {
             content: SingleChildScrollView(
               child: Padding(
                   padding: EdgeInsets.only(left: 10, right: 10),
-                child: ListBody(
+                child: Column(
                   children: [
-                    TextField(
-                      controller: _taskController,
-                      decoration:  InputDecoration(hintText: 'Enter your task'),
+                    ListBody(
+                      children: [
+                        TextField(
+                          controller: _taskController,
+                          decoration:  InputDecoration(hintText: 'Enter your task'),
+                        ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        ElevatedButton(
+                            onPressed: () async{
+                              if(id == null){
+                                await addTasks();
+                              }
+                              if( id != null){
+                                await updateTask(id);
+                              }
+                              _taskController.clear();
+                              Navigator.pop(context);
+                              print('elevated pressed');
+                            }, child: Text(id == null ? 'Create' : 'Update'))
+                      ],
                     ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    ElevatedButton(
-                        onPressed: () async{
-                          if(id == null){
-                            await addTasks();
-                          }
-                          if( id != null){
-                            await updateTask(id);
-                          }
-                          _taskController.clear();
-                          Navigator.pop(context);
-                          print('elevated pressed');
-                        }, child: Text(id == null ? 'Create' : 'Update'))
                   ],
                 ),
               ),
@@ -130,7 +173,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,6 +202,42 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
+          SizedBox(width: 20,),
+          GestureDetector(
+            onTap: ()  async{
+              print('sync pressed');
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Successfully synced '),
+              ));
+              print('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
+              for(int i=0; i< taskList.length; i++){
+                String task = taskList[i]["workList"];
+                print('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
+                print(taskList[i]["workList"].toString());
+                print('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
+                await submitData(task);
+                // setState(() {
+                //   _dataModel = data;
+                // });
+              }
+              // int id = taskList[0]["id"];
+              // String task = taskList[0]["workNote"];
+
+
+            },
+            child: Row(
+              children: const [
+                Text("Add"),
+                SizedBox(
+                  width: 5,
+                ),
+                Icon(
+                  Icons.sync_rounded,
+                  size: 40,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       body: _isLoading
@@ -167,28 +245,29 @@ class _MyHomePageState extends State<MyHomePage> {
             child: CircularProgressIndicator(),
           )
           : ListView.builder(
-        itemCount: taskList.length,
-        itemBuilder: (context, index)
+            itemCount: taskList.length,
+            itemBuilder: (context, index)
             => Card(
               margin: const EdgeInsets.only(left: 8, right: 8, top: 8),
               child: ListTile(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    taskList[index]['workList'],
-                    style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                ],
-              ),
-              trailing: SizedBox(
-                width: 100,
-                child: Row(
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
+                    Text(
+                      taskList[index]["workList"],
+                      style: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                  ],
+                ),
+                trailing: SizedBox(
+                  width: 100,
+                  child: Row(
+                    children: [
                     Container(
                       height: 40,
                       width: 40,
@@ -202,7 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           color: Colors.indigo,
                         ),
                         onPressed: () =>
-                           selectedTask(taskList[index]['id']),
+                           selectedTask(taskList[index]["id"]),
                       ),
                     ),
                     const SizedBox(
@@ -222,14 +301,16 @@ class _MyHomePageState extends State<MyHomePage> {
                             color: Colors.red,
                           ),
                           onPressed: () =>
-                              deleteTask(taskList[index]['id']) ,
+                              deleteTask(taskList[index]["id"]) ,
                         ),
                       ),
                     ),
                   ],
                 ),
-              )),
+              )
+              ),
         ),
+
       ),
     );
   }
