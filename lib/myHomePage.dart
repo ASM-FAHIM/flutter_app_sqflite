@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dbManager.dart';
@@ -18,12 +20,24 @@ Future<DataModel> submitData(int id, String tasks) async{
     });
     var data = response.body;
     print(data);
-    // if(response.statusCode == 201){
-    //   String responseString = response.body;
-    //   DataModel.fromJson(responseString as Map<String, dynamic>);
+    if(response.statusCode == 201){
+      return DataModel.fromJson(jsonDecode(response.body));
+      // String responseString = response.body;
+      // DataModel.fromJson(responseString as Map<String, dynamic>);
+    }
+    else{
+      throw Exception("Failed to ceate album");
+    }
+
+    // if (response.statusCode == 201) {
+    //   // If the server did return a 201 CREATED response,
+    //   // then parse the JSON.
+    //   return Album.fromJson(jsonDecode(response.body));
+    // } else {
+    //   // If the server did not return a 201 CREATED response,
+    //   // then throw an exception.
+    //   throw Exception('Failed to create album.');
     // }
-    String responseString = response.body;
-    return DataModel.fromJson(responseString as Map<String, dynamic>);
 
 }
 
