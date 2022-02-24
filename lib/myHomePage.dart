@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dbManager.dart';
@@ -12,22 +11,26 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-Future<DataModel> submitData(int id, String tasks) async{
-    var response = await http.post(Uri.https('flutterapi.brotherdev.com', 'syncapi.php'),
+Future<void> submitData(String tasks) async{
+  print('---------------');
+  print(tasks);
+    // var response = await http.post(Uri.https('flutterapi.brotherdev.com', 'syncapi.php'),
+  http.Response response = await http.post(
+      Uri.parse('http://flutterapi.brotherdev.com/syncapi.php'),
     body: {
-     'id' : id,
-     'workNote': tasks
+      // "id" : id,
+     "workNote": tasks
     });
     var data = response.body;
-    print(data);
-    if(response.statusCode == 201){
-      return DataModel.fromJson(jsonDecode(response.body));
-      // String responseString = response.body;
-      // DataModel.fromJson(responseString as Map<String, dynamic>);
-    }
-    else{
-      throw Exception("Failed to ceate album");
-    }
+    print(response.statusCode);
+    print(response.body);
+    print('-------------------');
+    // if(response.statusCode == 201){
+    //   return DataModel.fromJson(jsonDecode(response.body));
+    // }
+    // else{
+    //   throw Exception("Failed to ceate album $submitData(tasks)");
+    // }
 
     // if (response.statusCode == 201) {
     //   // If the server did return a 201 CREATED response,
@@ -72,8 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void selectedTask(int? id) async{
     if (id != null) {
       final selectedId =
-      taskList.firstWhere((element) => element['id'] == id);
-      _taskController.text = selectedId['workList'];
+      taskList.firstWhere((element) => element["id"] == id);
+      _taskController.text = selectedId["workList"];
     }
 
     showDialog(
@@ -170,7 +173,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,12 +209,20 @@ class _MyHomePageState extends State<MyHomePage> {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text('Successfully synced '),
               ));
-              int id = taskList.indexWhere((element) => element ['id'] == 1);
-              String task = _taskController.text;
-              DataModel data = await submitData(id, task);
-              setState(() {
-                _dataModel = data;
-              });
+              print('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
+              for(int i=0; i< taskList.length; i++){
+                String task = taskList[i]["workList"];
+                print('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
+                print(taskList[i]["workList"].toString());
+                print('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT');
+                await submitData(task);
+                // setState(() {
+                //   _dataModel = data;
+                // });
+              }
+              // int id = taskList[0]["id"];
+              // String task = taskList[0]["workNote"];
+
 
             },
             child: Row(
@@ -243,8 +253,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
                     Text(
-                      taskList[index]['workList'],
+                      taskList[index]["workList"],
                       style: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.bold),
                     ),
@@ -270,7 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           color: Colors.indigo,
                         ),
                         onPressed: () =>
-                           selectedTask(taskList[index]['id']),
+                           selectedTask(taskList[index]["id"]),
                       ),
                     ),
                     const SizedBox(
@@ -290,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             color: Colors.red,
                           ),
                           onPressed: () =>
-                              deleteTask(taskList[index]['id']) ,
+                              deleteTask(taskList[index]["id"]) ,
                         ),
                       ),
                     ),
@@ -299,6 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
               )
               ),
         ),
+
       ),
     );
   }

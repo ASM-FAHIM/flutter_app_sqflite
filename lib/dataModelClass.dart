@@ -1,7 +1,6 @@
 // To parse this JSON data, do
 //
 //     final dataModel = dataModelFromJson(jsonString);
-
 import 'dart:convert';
 
 List<DataModel> dataModelFromJson(String str) => List<DataModel>.from(json.decode(str).map((x) => DataModel.fromJson(x)));
@@ -23,7 +22,7 @@ class DataModel {
   );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
+    "id": id.toString(),
     "workNote": workNote,
   };
 }
