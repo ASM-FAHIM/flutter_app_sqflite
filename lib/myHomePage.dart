@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'dbManager.dart';
+import 'dataModelClass.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -8,7 +10,26 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+Future<DataModel> submitData(int id, String tasks) async{
+    var response = await http.post(Uri.https('flutterapi.brotherdev.com', 'syncapi.php'),
+    body: {
+     'id' : id,
+     'workNote': tasks
+    });
+    var data = response.body;
+    print(data);
+    // if(response.statusCode == 201){
+    //   String responseString = response.body;
+    //   DataModel.fromJson(responseString as Map<String, dynamic>);
+    // }
+    String responseString = response.body;
+    return DataModel.fromJson(responseString as Map<String, dynamic>);
+
+}
+
 class _MyHomePageState extends State<MyHomePage> {
+
+  late DataModel _dataModel;
 
   List<Map<String, dynamic>> taskList = [];
   bool _isLoading = true;
@@ -24,6 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _isLoading = false;
     });
   }
+
   @override
   void initState() {
     getTaskList();
@@ -166,8 +188,17 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           SizedBox(width: 20,),
           GestureDetector(
-            onTap: () {
+            onTap: ()  async{
               print('sync pressed');
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Successfully synced '),
+              ));
+              int id = taskList.indexWhere((element) => element ['id'] == 1);
+              String task = _taskController.text;
+              DataModel data = await submitData(id, task);
+              setState(() {
+                _dataModel = data;
+              });
 
             },
             child: Row(
