@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dbManager.dart';
@@ -17,10 +16,12 @@ Future<void> submitData(String tasks) async{
     // var response = await http.post(Uri.https('flutterapi.brotherdev.com', 'syncapi.php'),
   http.Response response = await http.post(
       Uri.parse('http://flutterapi.brotherdev.com/syncapi.php'),
+    // ?id=1&workNote=helloMunayem
     body: {
-      // "id" : id,
-     "workNote": tasks
-    });
+      //"id" : '',
+     "workNote": "tasks"
+    },
+  );
     var data = response.body;
     print(response.statusCode);
     print(response.body);
